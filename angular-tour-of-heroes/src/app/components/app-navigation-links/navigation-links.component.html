@@ -1,0 +1,8 @@
+<nav class="navigation-links">
+  <a [routerLink]="'/' + routes.dashboard">Dashboard</a>
+  <a [routerLink]="'/' + routes.heroes">Heroes</a>
+  <ng-container *ngIf="isUserLogged">
+    <a [routerLink]="'/auth/' + protectedRoutes.newHero">New Hero</a>
+  </ng-container>
+  <a *ngIf="!isUserLogged" [routerLink]="'/' + routes.login">Login</a>
+</nav>

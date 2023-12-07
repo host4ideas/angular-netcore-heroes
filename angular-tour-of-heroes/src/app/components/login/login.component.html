@@ -1,0 +1,11 @@
+<form class="login-form" (ngSubmit)="onSubmit(form)" #form="ngForm">
+  <label for="userName">Login with your username</label>
+  <input
+    id="userName"
+    placeholder="Write your username"
+    type="text"
+    minlength="4"
+    maxlength="8"
+  />
+  <button type="submit" [disabled]="!form.form.valid">Login</button>
+</form>
