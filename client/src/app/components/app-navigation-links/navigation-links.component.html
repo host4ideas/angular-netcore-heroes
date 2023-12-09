@@ -1,0 +1,14 @@
+<nav class="navigation-links">
+  <!-- Logged links -->
+  <ng-container *ngIf="user; else notLoggedIn">
+    <a href="#" (click)="logout()"> Logout {{ user.userName }} </a>
+    <a [routerLink]="'/' + routes.dashboard">Dashboard</a>
+  </ng-container>
+  <!-- Not logged links -->
+  <ng-template #notLoggedIn>
+    <a [routerLink]="'/' + routes.login">Login</a>
+  </ng-template>
+  <!-- Normal links -->
+  <a [routerLink]="'/' + routes.heroes">Heroes</a>
+  <a [routerLink]="'/auth/' + protectedRoutes.newHero">New Hero</a>
+</nav>

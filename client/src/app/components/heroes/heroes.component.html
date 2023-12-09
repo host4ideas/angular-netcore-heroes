@@ -1,0 +1,13 @@
+<h2>My Heroes</h2>
+
+<div *ngIf="selectedHero">
+  <app-hero-detail></app-hero-detail>
+</div>
+
+<ul class="heroes">
+  <li *ngFor="let hero of heroes">
+    <a routerLink="/auth/{{ protectedRoutes.detail }}/{{ hero.id }}">
+      <span class="badge">{{ hero.name }}</span> {{ hero.power.name }}
+    </a>
+  </li>
+</ul>

@@ -1,0 +1,26 @@
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+  <label for="userName">Username</label>
+  <input
+    id="userName"
+    placeholder="Write your username"
+    type="text"
+    minlength="4"
+    maxlength="8"
+    required
+    formControlName="userName"
+    [class.error]="!loginForm.valid"
+  />
+  <label for="password">Password</label>
+  <input
+    id="password"
+    placeholder="Write your password"
+    type="password"
+    minlength="8"
+    maxlength="30"
+    required
+    formControlName="password"
+    [class.error]="!loginForm.valid"
+  />
+  <small>* 1 ASCII letter, 1 ASCII uppercase letter, 1 number, between 8 and 30 characters</small>
+  <button [disabled]="!loginForm.valid" type="submit">Login</button>
+</form>

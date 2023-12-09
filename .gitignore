@@ -1,3 +1,7 @@
+# *************** custom gitignore ***************
+
+server/HeroesAPI/HeroesAPI/appsettings*.json
+
 # *************** dotnet gitignore ***************
 
 *.swp
