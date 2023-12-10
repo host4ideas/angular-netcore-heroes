@@ -1,0 +1,75 @@
+trigger:
+- master
+
+pool:
+ vmImage: ubuntu-22.04
+
+steps:
+
+- task: NodeTool@0
+  displayName: 'Use Node 20.9.0'
+  inputs:
+    versionSource: 'spec'
+    versionSpec: '20.9.0'
+
+- task: Cache@2
+  displayName: load npm cache
+  inputs:
+    key: npm | $(Agent.OS) | $(System.DefaultWorkingDirectory)/angular-tour-of-heroes/package-lock.json
+    restoreKeys: |
+        npm | "$(Agent.OS)"
+    path: $(npm_config_cache)
+
+- script: |
+    npm install -g @angular/cli
+  displayName: 'Install Angular CLI'
+  workingDirectory: '$(Build.SourcesDirectory)/angular-tour-of-heroes'
+
+- script: |
+    npm install
+  displayName: 'Resolve Dependencies'
+  workingDirectory: '$(Build.SourcesDirectory)/angular-tour-of-heroes'
+
+- script: |
+    npm run build:ssr
+  displayName: 'Production Build'
+  workingDirectory: '$(Build.SourcesDirectory)/angular-tour-of-heroes'
+
+- script: |
+    dir
+  displayName: List directory
+  workingDirectory: '$(Build.SourcesDirectory)'
+
+- script: |
+    dir
+  displayName: List directory
+  workingDirectory: '$(Build.SourcesDirectory)/angular-tour-of-heroes'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)/app/dist'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/angular-tour-of-heroes/dist'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/app/dist'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)/app/dist'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/angular-tour-of-heroes'
+    Contents: server.ts
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/app/dist'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)/app/dist'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: prerender.js
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/app/dist'
+
+- task: AzureRmWebAppDeployment@3
+  displayName: 'Azure App Service Deploy'
+  inputs:
+    azureSubscription: 'Azure for Students(827db528-0c2a-498e-ab18-90f98ae67a68)'
+    appType: 'app'
+    WebAppName: 'angularssrheroes'
+    Package: '$(Build.ArtifactStagingDirectory)/app'
+    ConfigurationSettings: '-Handler iisnode -NodeStartFile server.ts -appType node'
