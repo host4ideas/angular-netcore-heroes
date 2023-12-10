@@ -12,14 +12,6 @@ steps:
     versionSource: 'spec'
     versionSpec: '20.9.0'
 
-- task: Cache@2
-  displayName: load npm cache
-  inputs:
-    key: npm | $(Agent.OS) | $(System.DefaultWorkingDirectory)/angular-tour-of-heroes/package-lock.json
-    restoreKeys: |
-        npm | "$(Agent.OS)"
-    path: $(npm_config_cache)
-
 - script: |
     npm install -g @angular/cli
   displayName: 'Install Angular CLI'
