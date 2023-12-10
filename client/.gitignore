@@ -1,3 +1,12 @@
+# *************** custom gitignore ***************
+
+*/HeroesAPI/appsettings*.json
+*/environments/environment.ts
+*/environments/environment.development.ts
+*__azurite_db_blob_extent__.json
+*__azurite_db_blob__.json
+*__blobstorage__*
+
 # *************** dotnet gitignore ***************
 
 *.swp
