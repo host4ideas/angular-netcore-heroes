@@ -5,7 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { HeroService } from '../../services/hero.service';
 import { Power } from '../../interfaces/power';
 import { HeroPowerService } from '../../services/hero-power.service';
-import { validateImageFile } from '../../helpers/blobHelper';
 import { BlobService } from '../../services/blob.service';
 
 interface FormModel {
@@ -22,6 +21,9 @@ interface FormModel {
   imports: [NgFor, FormsModule, JsonPipe, NgIf],
   templateUrl: './new-hero.component.html',
   styleUrl: './new-hero.component.scss',
+  host: {
+    ngSkipHydration: 'true',
+  },
 })
 export class NewHeroComponent implements OnInit {
   powers: Power[] = [];
@@ -45,20 +47,26 @@ export class NewHeroComponent implements OnInit {
       .subscribe((powers) => powers && (this.powers = powers));
   }
 
+  getImagePreview(): string | null {
+    return this.model.image ? URL.createObjectURL(this.model.image) : null;
+  }
+
   async onSubmit() {
+    let heroImage: string | null = null;
     const inputImage = this.model.image;
 
     if (inputImage) {
-      const containerClient = this.blobService.containerHeroesImagesClient;
-      if (containerClient && validateImageFile(inputImage)) {
-        this.blobService.uploadBlob(containerClient, inputImage);
-      }
+      heroImage = await this.blobService.upsertHeroImage(
+        this.model.name,
+        inputImage
+      );
     }
 
     const newHero: NewHeroForm = {
       name: this.model.name,
       power: this.powers[this.model.powerIndex],
       alterEgo: this.model.alterEgo,
+      image: heroImage ? heroImage : undefined,
     };
     await this.heroService.addHero(newHero);
     this.submitted = true;

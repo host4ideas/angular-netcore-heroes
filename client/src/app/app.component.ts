@@ -12,6 +12,7 @@ import { ROUTES } from './router/routes';
 import { AppNavigationLinksComponent } from './components/app-navigation-links/navigation-links.component';
 import { UserService } from './services/user.service';
 import { User } from './interfaces/user';
+import { UploadTestComponent } from './components/upload-test/upload-test.component';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,7 @@ import { User } from './interfaces/user';
     HeroesComponent,
     MessagesComponent,
     AppNavigationLinksComponent,
+    UploadTestComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

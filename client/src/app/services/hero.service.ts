@@ -9,13 +9,13 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class HeroService {
-  messageService = inject(MessageService);
   httpClient = inject(HttpClient);
-  private heroesUrl = environment.heroesApiUrl + '/api/heroes';
+  messageService = inject(MessageService);
+  private readonly HEROES_URL = environment.heroesApiUrl + '/api/heroes';
 
   getHero(id: string): Observable<Hero | null> {
     try {
-      const hero = this.httpClient.get<Hero>(`${this.heroesUrl}/${id}`);
+      const hero = this.httpClient.get<Hero>(`${this.HEROES_URL}/${id}`);
       this.messageService.add(`HeroService: fetch hero id=${id}`);
       return hero;
     } catch (error: any) {
@@ -27,7 +27,7 @@ export class HeroService {
 
   getHeroes(): Observable<Hero[] | null> {
     try {
-      const heroes = this.httpClient.get<Hero[]>(this.heroesUrl);
+      const heroes = this.httpClient.get<Hero[]>(this.HEROES_URL);
       this.messageService.add(`HeroService: fetch heroes`);
       return heroes;
     } catch (error: any) {
@@ -40,7 +40,7 @@ export class HeroService {
   addHero(hero: NewHeroForm): Promise<boolean> {
     return new Promise((resolve) => {
       try {
-        this.httpClient.post(this.heroesUrl, hero).subscribe(() => {
+        this.httpClient.post(this.HEROES_URL, hero).subscribe(() => {
           this.messageService.add(`HeroService: add hero ${hero.name}`);
           resolve(true);
         });
@@ -54,7 +54,7 @@ export class HeroService {
 
   updateHero(hero: Hero): Observable<Hero | null> {
     try {
-      const updatedHero = this.httpClient.put<Hero>(this.heroesUrl, hero);
+      const updatedHero = this.httpClient.put<Hero>(this.HEROES_URL, hero);
       this.messageService.add(`HeroService: update hero id=${hero.id}`);
       return updatedHero;
     } catch (error: any) {
@@ -67,7 +67,7 @@ export class HeroService {
   removeHero(id: string): Promise<boolean> {
     return new Promise((resolve) => {
       try {
-        this.httpClient.delete(`${this.heroesUrl}/${id}`).subscribe(() => {
+        this.httpClient.delete(`${this.HEROES_URL}/${id}`).subscribe(() => {
           this.messageService.add(`HeroService: remove hero id=${id}`);
           resolve(true);
         });

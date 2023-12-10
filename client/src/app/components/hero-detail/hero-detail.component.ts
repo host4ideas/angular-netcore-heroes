@@ -5,6 +5,7 @@ import { Hero } from '../../interfaces/hero';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HeroService } from '../../services/hero.service';
 import { ROUTES } from '../../router/routes';
+import { BlobService } from '../../services/blob.service';
 
 @Component({
   selector: 'app-hero-detail',
@@ -15,21 +16,30 @@ import { ROUTES } from '../../router/routes';
 })
 export class HeroDetailComponent implements OnInit {
   hero?: Hero;
-  route = inject(ActivatedRoute);
-  location = inject(Location);
-  heroService = inject(HeroService);
   router = inject(Router);
+  location = inject(Location);
+  route = inject(ActivatedRoute);
+  heroService = inject(HeroService);
+  blobService = inject(BlobService);
 
   ngOnInit(): void {
     this.getHero();
   }
 
-  getHero(): void {
+  getHero() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id)
-      this.heroService
-        .getHero(id)
-        .subscribe((hero) => hero && (this.hero = hero));
+      this.heroService.getHero(id).subscribe((hero) => {
+        if (!hero) return;
+        if (!hero.image) {
+          this.hero = hero;
+        } else {
+          this.blobService.getHeroImageUrl(hero.image).subscribe((imageUrl) => {
+            if (imageUrl) hero.image = imageUrl;
+            this.hero = hero;
+          });
+        }
+      });
   }
 
   async deleteHero() {

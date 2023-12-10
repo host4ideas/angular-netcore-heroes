@@ -1,0 +1,9 @@
+<form (ngSubmit)="onSubmit()">
+  <input
+    type="file"
+    #fileInput
+    (change)="handleFileInput($event)"
+    accept=".jpg, .jpeg, .png, .gif"
+  />
+  <button type="submit">Upload File</button>
+</form>

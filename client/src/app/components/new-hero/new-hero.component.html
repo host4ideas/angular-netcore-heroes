@@ -1,7 +1,11 @@
 <div class="container">
   <ng-container *ngIf="!submitted; else submittedInfo">
     <h2>Hero Form</h2>
-    <form (ngSubmit)="onSubmit()" #heroForm="ngForm">
+    <form
+      (ngSubmit)="onSubmit()"
+      #heroForm="ngForm"
+      enctype="multipart/form-data"
+    >
       <div class="form-group">
         <label for="name">Name</label>
         <input
@@ -60,6 +64,10 @@
           [(ngModel)]="model.image"
           name="image"
         />
+        <span *ngIf="model.image"
+          >{{ getImagePreview() }}{{ model.image }}</span
+        >
+        <img *ngIf="model.image" [src]="getImagePreview()" width="200px" />
       </div>
 
       <button
