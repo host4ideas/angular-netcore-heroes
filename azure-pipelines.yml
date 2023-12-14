@@ -22,9 +22,14 @@ steps:
 - script: |
     npm install -g @angular/cli
     npm ci
-    ng build --prod
   workingDirectory: '$(System.DefaultWorkingDirectory)/client'
-  displayName: 'npm install and build'
+  displayName: 'npm install'
+
+- script: |
+    npm install -g @angular/cli
+    ng build
+  workingDirectory: '$(System.DefaultWorkingDirectory)/client'
+  displayName: 'build'
 
 - task: CopyFiles@2
   displayName: 'Copy Files to: $(System.ArtifactStagingDirectory)/dist'
