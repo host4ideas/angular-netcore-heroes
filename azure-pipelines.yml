@@ -23,14 +23,14 @@ steps:
     npm install -g @angular/cli
     npm ci
     ng build --prod
-  workingDirectory: '$(Build.DefaultWorkingDirectory)/client'
+  workingDirectory: '$(System.DefaultWorkingDirectory)/client'
   displayName: 'npm install and build'
 
 - task: CopyFiles@2
-  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)/dist'
+  displayName: 'Copy Files to: $(System.ArtifactStagingDirectory)/dist'
   inputs:
-    SourceFolder: '$(Build.DefaultWorkingDirectory)/client/dist/$(appName)'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/dist'
+    SourceFolder: '$(System.DefaultWorkingDirectory)/client/dist/$(appName)'
+    TargetFolder: '$(System.ArtifactStagingDirectory)/dist'
 
 - task: AzureRmWebAppDeployment@4
   inputs:
@@ -38,6 +38,6 @@ steps:
     azureSubscription: 'Azure for Students(827db528-0c2a-498e-ab18-90f98ae67a68)'
     appType: 'webAppLinux'
     WebAppName: 'angularssrheroes'
-    packageForLinux: '$(Build.ArtifactStagingDirectory)/dist/server'
+    packageForLinux: '$(System.ArtifactStagingDirectory)/dist/server'
     RuntimeStack: 'NODE|20-lts'
   displayName: 'Deploy ssr web app'
