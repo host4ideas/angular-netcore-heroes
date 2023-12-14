@@ -19,6 +19,18 @@ steps:
     versionSpec: '20.x'
   displayName: 'Install Node.js'
 
+- task: DownloadSecureFile@1
+  inputs:
+    secureFile: 'environment.ts'
+  displayName: "Download environment.ts"
+
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: "$(Agent.TempDirectory)"
+    contents: "environment.ts"
+    targetFolder: "$(System.DefaultWorkingDirectory)/client/src/environments"
+  displayName: "Import environment.ts"
+
 - script: |
     npm install -g @angular/cli
     npm ci
