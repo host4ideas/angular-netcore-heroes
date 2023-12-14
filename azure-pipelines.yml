@@ -57,4 +57,5 @@ steps:
     WebAppName: 'angularssrheroes'
     packageForLinux: '$(System.ArtifactStagingDirectory)/dist/server'
     RuntimeStack: 'NODE|20-lts'
+    StartupCommand: 'pm2 server.mjs'
   displayName: 'Deploy ssr web app'
