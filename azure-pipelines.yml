@@ -45,7 +45,7 @@ steps:
 - task: CopyFiles@2
   displayName: 'Copy Files to: $(System.DefaultWorkingDirectory)/client/dist/$(appName)/server'
   inputs:
-    SourceFolder: '$(System.DefaultWorkingDirectory)/client/src/ssr-server'
+    SourceFolder: '$(System.DefaultWorkingDirectory)/client/ssr-server'
     Contents: '/ecosystem.config.js'
     TargetFolder: '$(System.DefaultWorkingDirectory)/client/dist/$(appName)/server'
 
