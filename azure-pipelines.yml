@@ -23,12 +23,13 @@ steps:
     npm install -g @angular/cli
     npm ci
     ng build --prod
+  workingDirectory: '$(Build.DefaultWorkingDirectory)/client'
   displayName: 'npm install and build'
 
 - task: CopyFiles@2
   displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)/dist'
   inputs:
-    SourceFolder: '$(Build.DefaultWorkingDirectory)/$(appName)/dist/angular-tour-of-heroes'
+    SourceFolder: '$(Build.DefaultWorkingDirectory)/client/dist/$(appName)'
     TargetFolder: '$(Build.ArtifactStagingDirectory)/dist'
 
 - task: AzureRmWebAppDeployment@4
