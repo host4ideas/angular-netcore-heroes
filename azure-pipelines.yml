@@ -38,10 +38,16 @@ steps:
   displayName: 'npm install'
 
 - script: |
-    npm install -g @angular/cli
     ng build
   workingDirectory: '$(System.DefaultWorkingDirectory)/client'
   displayName: 'build'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(System.DefaultWorkingDirectory)/client/dist/$(appName)/server'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/client/src/ssr-server'
+    Contents: '/ecosystem.config.js'
+    TargetFolder: '$(System.DefaultWorkingDirectory)/client/dist/$(appName)/server'
 
 - task: CopyFiles@2
   displayName: 'Copy Files to: $(System.ArtifactStagingDirectory)/dist'
