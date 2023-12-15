@@ -4,7 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build-prod": "ng build",
+    "start-build-dev": "ng build --configuration development && cp ./ssr-server/selfsigned.crt ./dist/angular-tour-of-heroes/server && cp ./ssr-server/selfsigned.key ./dist/angular-tour-of-heroes/server && node ./dist/angular-tour-of-heroes/server/server.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:angular-tour-of-heroes": "node dist/angular-tour-of-heroes/server/server.mjs"
@@ -33,6 +34,7 @@
     "@angular-devkit/build-angular": "^17.0.5",
     "@angular/cli": "^17.0.5",
     "@angular/compiler-cli": "^17.0.0",
+    "@azure/identity-vscode": "^1.0.0",
     "@types/express": "^4.17.17",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^18.18.0",
@@ -43,7 +45,6 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "lite-server": "^2.6.1",
     "typescript": "~5.2.2"
   }
 }

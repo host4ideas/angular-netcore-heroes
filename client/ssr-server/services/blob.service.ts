@@ -1,4 +1,4 @@
-import { DefaultAzureCredential } from '@azure/identity';
+import { DefaultAzureCredential, useIdentityPlugin } from '@azure/identity';
 import {
   BlobServiceClient,
   BlockBlobClient,
@@ -6,6 +6,9 @@ import {
 } from '@azure/storage-blob';
 import { environment } from '../../src/environments/environment';
 import { createUrlFromBlob } from '../helpers/blobHelper';
+import { vsCodePlugin } from '@azure/identity-vscode';
+
+useIdentityPlugin(vsCodePlugin);
 
 class BlobService {
   private blobServiceClient?: BlobServiceClient;
