@@ -13,6 +13,7 @@
     "ssr-server/server.ts"
   ],
   "include": [
-    "src/**/*.d.ts"
+    "src/**/*.d.ts",
+    "ssr-server/**/*.ts"
   ]
 }

@@ -1,10 +1,15 @@
 import {
   AfterRenderPhase,
   Component,
+  PLATFORM_ID,
   afterNextRender,
   inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  CommonModule,
+  isPlatformBrowser,
+  isPlatformServer,
+} from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { HeroesComponent } from './components/heroes/heroes.component';
 import { MessagesComponent } from './components/messages/messages.component';
@@ -43,5 +48,9 @@ export class AppComponent {
         phase: AfterRenderPhase.Read,
       }
     );
+
+    if (isPlatformServer(PLATFORM_ID)) {
+      console.log(Node.DOCUMENT_TYPE_NODE);
+    }
   }
 }

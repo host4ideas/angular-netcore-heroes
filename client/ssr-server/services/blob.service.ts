@@ -3,34 +3,65 @@ import {
   BlobServiceClient,
   BlockBlobClient,
   ContainerClient,
+  StorageSharedKeyCredential,
 } from '@azure/storage-blob';
 import { environment } from '../../src/environments/environment';
 import { createUrlFromBlob } from '../helpers/blobHelper';
-import { vsCodePlugin } from '@azure/identity-vscode';
+// import { vsCodePlugin } from '@azure/identity-vscode';
 
-useIdentityPlugin(vsCodePlugin);
+// useIdentityPlugin(vsCodePlugin);
 
 class BlobService {
   private blobServiceClient?: BlobServiceClient;
   containerHeroesImagesClient?: ContainerClient;
 
   constructor() {
-    const azureStorageAccountUrl = environment.azureStorageAccountUrl;
-    if (!azureStorageAccountUrl)
-      throw Error('Azure Storage azureStorageAccountUrl not found');
+    // const azureStorageAccountUrl = environment.azureStorageAccountUrl;
+    // if (!azureStorageAccountUrl)
+    //   throw Error('Azure Storage azureStorageAccountUrl not found');
 
-    this.blobServiceClient = new BlobServiceClient(
-      azureStorageAccountUrl,
-      new DefaultAzureCredential()
-    );
+    // this.blobServiceClient = new BlobServiceClient(
+    //   'https://storageheroesweapp.blob.core.windows.net/',
+    //   new DefaultAzureCredential()
+    // );
+
+    // Create a StorageSharedKeyCredential object by passing your account name and account key
+    // const credential = new StorageSharedKeyCredential(
+    //   environment.azureStorageAccountName,
+    //   environment.azureStorageAccountKey
+    // );
+
+    // Create a BlobServiceClient with the credential
+    // this.blobServiceClient = new BlobServiceClient(
+    //   environment.azureStorageAccountUrl,
+    //   credential
+    // );
 
     // Initialize containers
-    if (this.blobServiceClient)
-      this.initHeroesContainer().then(
-        (containerClient) =>
-          containerClient &&
-          (this.containerHeroesImagesClient = containerClient)
-      );
+    // if (this.blobServiceClient)
+    //   this.initHeroesContainer().then(
+    //     (containerClient) =>
+    //       containerClient &&
+    //       (this.containerHeroesImagesClient = containerClient)
+    //   );
+
+    // this.containerHeroesImagesClient =
+    //   this.blobServiceClient.getContainerClient(
+    //     environment.azureBlobHeroesImagesName
+    //   );
+
+    // const credential = new StorageSharedKeyCredential(
+    //   'devstoreaccount1',
+    //   'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=='
+    // );
+
+    // const blobServiceClient = new BlobServiceClient(
+    //   'http://127.0.0.1:10000/',
+    //   credential
+    // );
+
+    // const containerHeroesImagesClient =
+    //   blobServiceClient.getContainerClient('devstoreaccount1');
   }
 
   private async initHeroesContainer(): Promise<ContainerClient | null> {
@@ -56,6 +87,27 @@ class BlobService {
     );
 
     return containerClient;
+  }
+
+  async test() {
+    const blobServiceClient = new BlobServiceClient(
+      `https://storageheroesweapp.blob.core.windows.net`,
+      new DefaultAzureCredential()
+    );
+
+    // Create a unique name for the container
+    const containerName = 'test';
+
+    console.log('\nCreating container...');
+    console.log('\t', containerName);
+
+    // Get a reference to a container
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    // Create the container
+    const createContainerResponse = await containerClient.create();
+    console.log(
+      `Container was created successfully.\n\trequestId:${createContainerResponse.requestId}\n\tURL: ${containerClient.url}`
+    );
   }
 
   async listBlobClients(

@@ -1,32 +1,115 @@
-﻿using HeroesAPI.Helpers;
-using HeroesAPI.Models;
+﻿using HeroesAPI.Models;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using Container = Microsoft.Azure.Cosmos.Container;
 
 namespace HeroesAPI.Services
 {
-    public class ServiceCosmosDb(CosmosClient client, HelperCosmosDb helperCosmos)
+    public class ServiceCosmosDb
     {
-        readonly string database = "heroeswebapp";
-        readonly string containerHeroesName = "containerheroes";
-        readonly string containerPowersName = "containerpowers";
-        private readonly Container containerHeroes = helperCosmos.GetContainerHeroes();
-        private readonly Container containerPowers = helperCosmos.GetContainerPowers();
+        private string CosmosDatabaseName { get; set; }
+        private string ContainerHeroesName { get; set; }
+        private string ContainerPowersName { get; set; }
+        private string ContainerUsersName { get; set; }
+
+        private Container ContainerHeroes { get; set; }
+        private Container ContainerPowers { get; set; }
+        private Container ContainerUsers { get; set; }
+
+        private CosmosClient CosmosClient { get; set; }
+
+        public ServiceCosmosDb(CosmosClient client, IConfiguration configuration)
+        {
+            this.CosmosClient = client;
+
+            this.CosmosDatabaseName = configuration.GetValue<string>("HeroesCosmosDB:Database");
+            this.ContainerHeroesName = configuration.GetValue<string>("HeroesCosmosDB:ContainerHeroes");
+            this.ContainerPowersName = configuration.GetValue<string>("HeroesCosmosDB:ContainerPowers");
+            this.ContainerUsersName = configuration.GetValue<string>("HeroesCosmosDB:ContainerUsers");
+
+            this.ContainerHeroes = client.GetContainer(CosmosDatabaseName, ContainerHeroesName);
+            this.ContainerPowers = client.GetContainer(CosmosDatabaseName, ContainerPowersName);
+            this.ContainerUsers = client.GetContainer(CosmosDatabaseName, ContainerUsersName);
+        }
 
         /// <summary>
-        /// Method to create the database and container
+        /// Creates the database and containers
         /// </summary>
         public async Task CreateDatabaseAsync()
         {
-            ContainerProperties propertiesHeroes = new(this.containerHeroesName, "/id");
-            ContainerProperties propertiesPowers = new(this.containerPowersName, "/id");
-            await client.CreateDatabaseIfNotExistsAsync(this.database);
-            await client.GetDatabase(this.database).CreateContainerIfNotExistsAsync(propertiesHeroes);
-            await client.GetDatabase(this.database).CreateContainerIfNotExistsAsync(propertiesPowers);
+            ContainerProperties propertiesHeroes = new(this.ContainerHeroesName, "/id");
+            ContainerProperties propertiesPowers = new(this.ContainerPowersName, "/id");
+            ContainerProperties propertiesUsers = new(this.ContainerUsersName, "/id");
+            await this.CosmosClient.CreateDatabaseIfNotExistsAsync(this.CosmosDatabaseName);
+            await this.CosmosClient.GetDatabase(this.CosmosDatabaseName).CreateContainerIfNotExistsAsync(propertiesHeroes);
+            await this.CosmosClient.GetDatabase(this.CosmosDatabaseName).CreateContainerIfNotExistsAsync(propertiesPowers);
+            await this.CosmosClient.GetDatabase(this.CosmosDatabaseName).CreateContainerIfNotExistsAsync(propertiesUsers);
         }
 
-        #region heroes
+        #region USERS
+
+        /// <summary>
+        /// Gets a user by its id
+        /// </summary>
+        /// <param name="id"></param>
+        public async Task<AppUser?> FindUserByIdAsync(string id)
+        {
+            ItemResponse<AppUser> response = await ContainerUsers.ReadItemAsync<AppUser>(id, new PartitionKey(id));
+            return response.Resource;
+        }
+
+        /// <summary>
+        /// Gets a user by its email
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns>Found user</returns>
+        /// <exception cref="ArgumentNullException">If email is null or empty</exception>
+        public async Task<AppUser?> FindUserByEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+
+            AppUser? user = null;
+
+            // Get LINQ IQueryable object
+            IOrderedQueryable<AppUser> queryable = this.ContainerUsers.GetItemLinqQueryable<AppUser>();
+
+            // Construct LINQ query
+            var matches = queryable
+                .Where(p => p.Email.Equals(email));
+
+            // Convert to feed iterator
+            using FeedIterator<AppUser> linqFeed = matches.ToFeedIterator();
+
+            // Iterate query result pages
+            while (linqFeed.HasMoreResults)
+            {
+                FeedResponse<AppUser> response = await linqFeed.ReadNextAsync();
+
+                // Iterate query results
+                foreach (AppUser item in response)
+                {
+                    return item;
+                }
+            }
+
+            return user;
+        }
+
+        /// <summary>
+        /// Creates a new user in the users container
+        /// </summary>
+        /// <param name="user"></param>
+        public Task InsertUserAsync(AppUser user)
+        {
+            return ContainerUsers.CreateItemAsync(user);
+        }
+
+        #endregion
+
+        #region HEROES
 
         /// <summary>
         /// Get all heroes from the container
@@ -35,7 +118,7 @@ namespace HeroesAPI.Services
         {
             List<Hero> results = [];
             // LINQ query generation
-            using FeedIterator<Hero> setIterator = containerHeroes.GetItemQueryIterator<Hero>();
+            using FeedIterator<Hero> setIterator = ContainerHeroes.GetItemQueryIterator<Hero>();
             //Asynchronous query execution
             while (setIterator.HasMoreResults)
             {
@@ -50,7 +133,7 @@ namespace HeroesAPI.Services
         /// <param name="id"></param>
         public async Task<Hero?> FindHeroAsync(string id)
         {
-            ItemResponse<Hero> response = await containerHeroes.ReadItemAsync<Hero>(id, new PartitionKey(id));
+            ItemResponse<Hero> response = await ContainerHeroes.ReadItemAsync<Hero>(id, new PartitionKey(id));
             return response.Resource;
         }
 
@@ -58,9 +141,9 @@ namespace HeroesAPI.Services
         /// Creates a new hero in the container
         /// </summary>
         /// <param name="hero"></param>
-        public async Task InsertHeroAsync(Hero hero)
+        public Task InsertHeroAsync(Hero hero)
         {
-            await containerHeroes.CreateItemAsync(hero);
+            return ContainerHeroes.CreateItemAsync(hero);
         }
 
         /// <summary>
@@ -70,7 +153,7 @@ namespace HeroesAPI.Services
         /// <returns>The updated or inserted hero</returns>
         public async Task<Hero> UpdateHeroAsync(Hero hero)
         {
-            var response = await containerHeroes.UpsertItemAsync<Hero>(hero, new PartitionKey(hero.Id.ToString()));
+            var response = await ContainerHeroes.UpsertItemAsync<Hero>(hero, new PartitionKey(hero.Id.ToString()));
             return response.Resource;
         }
 
@@ -78,14 +161,14 @@ namespace HeroesAPI.Services
         /// Deletes a hero from the container
         /// </summary>
         /// <param name="id"></param>
-        public async Task DeleteHeroAsync(string id)
+        public Task DeleteHeroAsync(string id)
         {
-            await containerHeroes.DeleteItemAsync<Hero>(id, new PartitionKey(id));
+            return ContainerHeroes.DeleteItemAsync<Hero>(id, new PartitionKey(id));
         }
 
         #endregion
 
-        #region powers
+        #region POWERS
 
         /// <summary>
         /// Retrieves all powers from powers container
@@ -95,8 +178,8 @@ namespace HeroesAPI.Services
         {
             List<Power> results = [];
             // LINQ query generation
-            using FeedIterator<Power> setIterator = containerPowers.GetItemQueryIterator<Power>();
-            //Asynchronous query execution
+            using FeedIterator<Power> setIterator = ContainerPowers.GetItemQueryIterator<Power>();
+            //Asynchronous query executiCn
             while (setIterator.HasMoreResults)
             {
                 results.AddRange(await setIterator.ReadNextAsync());
@@ -110,7 +193,7 @@ namespace HeroesAPI.Services
         /// <param name="id"></param>
         public async Task<Power?> FindPowerAsync(string id)
         {
-            ItemResponse<Power> response = await containerPowers.ReadItemAsync<Power>(id, new PartitionKey(id));
+            ItemResponse<Power> response = await ContainerPowers.ReadItemAsync<Power>(id, new PartitionKey(id));
             return response.Resource;
         }
 
@@ -118,9 +201,9 @@ namespace HeroesAPI.Services
         /// Inserts a new power to the powers container
         /// </summary>
         /// <param name="power"></param>
-        public async Task InsertPowerAsync(Power power)
+        public Task InsertPowerAsync(Power power)
         {
-            await containerPowers.CreateItemAsync(power);
+            return ContainerPowers.CreateItemAsync(power);
         }
 
         /// <summary>
@@ -130,7 +213,7 @@ namespace HeroesAPI.Services
         /// <returns>The updated or inserted power</returns>
         public async Task<Power> UpdatePowerAsync(Power power)
         {
-            var response = await containerPowers.UpsertItemAsync(power);
+            var response = await ContainerPowers.UpsertItemAsync(power);
             return response.Resource;
         }
 
@@ -138,9 +221,9 @@ namespace HeroesAPI.Services
         /// Deletes a power from the powers container by its id
         /// </summary>
         /// <param name="id"></param>
-        public async Task DeletePowerAsync(string id)
+        public Task DeletePowerAsync(string id)
         {
-            await containerPowers.DeleteItemAsync<Power>(id, new PartitionKey(id));
+            return ContainerPowers.DeleteItemAsync<Power>(id, new PartitionKey(id));
         }
 
         #endregion

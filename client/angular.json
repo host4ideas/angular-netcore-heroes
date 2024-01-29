@@ -17,6 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
+            "preserveSymlinks": true,
             "outputPath": "dist/angular-tour-of-heroes",
             "index": "src/index.html",
             "browser": "src/main.ts",
@@ -36,11 +37,13 @@
             "server": "src/main.server.ts",
             "prerender": true,
             "ssr": {
-              "entry": "/ssr-server/server.ts"
+              "entry": "/ssr-server/server.js"
             }
           },
           "configurations": {
             "production": {
+              "optimization": true,
+              "sourceMap": false,
               "budgets": [
                 {
                   "type": "initial",

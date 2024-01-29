@@ -1,5 +1,6 @@
 ﻿using HeroesAPI.Helpers;
 using HeroesAPI.Models;
+using HeroesAPI.Models.Forms;
 using HeroesAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +29,7 @@ namespace HeroesAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> CreatePower(NewPowerForm newPower)
+        public async Task<ActionResult> CreatePower([FromBody] NewPowerForm newPower)
         {
             Power power = new()
             {
@@ -41,7 +42,7 @@ namespace HeroesAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<Power?>> UpdatePower(Power power)
+        public async Task<ActionResult<Power?>> UpdatePower([FromBody] Power power)
         {
             var updatedPower = await serviceCosmos.UpdatePowerAsync(power);
             return Ok(updatedPower);

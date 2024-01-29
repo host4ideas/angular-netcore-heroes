@@ -1,6 +1,6 @@
 ﻿namespace HeroesAPI.Services
 {
-    public class BlobService
+    public class ServiceStorageBlob
     {
 
     }

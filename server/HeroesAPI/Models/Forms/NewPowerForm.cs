@@ -1,4 +1,4 @@
-﻿namespace HeroesAPI.Models
+﻿namespace HeroesAPI.Models.Forms
 {
     public class NewPowerForm
     {

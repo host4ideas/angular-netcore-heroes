@@ -1,7 +1,10 @@
 ﻿using HeroesAPI.Services;
 using Microsoft.Azure.Cosmos;
-using HeroesAPI.Controllers;
 using HeroesAPI.Helpers;
+using HeroesAPI.Data;
+using Microsoft.EntityFrameworkCore;
+using HeroesAPI.Repositories;
+using HeroesAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,29 +16,42 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowAllOrigins,
                       policy =>
                       {
-                          policy.WithOrigins().AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                          policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
                       });
 
     options.AddPolicy(name: MyAllowSpecificOrigins,
                   policy =>
                   {
-                      policy.WithOrigins("http://example.com",
-                                          "http://www.contoso.com");
+                      policy.WithOrigins("http://localhost:4000", "https://localhost:4000");
                   });
 });
 
 // Add services to the container.
+
+builder.Services.AddDbContext<HeroesAppContext>(options =>
+{
+    options.UseSqlServer("Data Source=FELIX-LAPTOP;Initial Catalog=heroes;Persist Security Info=True;User ID=sa;Trust Server Certificate=True");
+});
+
+builder.Services.AddTransient<RepositoryAddressesSql>();
+builder.Services.AddTransient<RepositoryUsersSql>();
+
 string? cosmosConnectionString = builder.Configuration.GetConnectionString("CosmosDB");
 
-CosmosClient client = new(cosmosConnectionString);
 // Services
+CosmosClient client = new(cosmosConnectionString);
 builder.Services.AddSingleton(client);
 builder.Services.AddTransient<ServiceCosmosDb>();
 
 // Helpers
 builder.Services.AddSingleton<HelperDocumentId>();
-HelperCosmosDb helperCosmosDb = new(builder.Configuration, client);
-builder.Services.AddSingleton(helperCosmosDb);
+builder.Services.AddSingleton<HelperOAuthToken>();
+
+// Security
+HelperOAuthToken helperOAuth = new(builder.Configuration);
+builder.Services.AddAuthentication(helperOAuth.GetAuthenticationOptions()).AddJwtBearer(helperOAuth.GetJwtOptions());
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("ADMIN_ONLY", policy => policy.RequireRole(UserRole.Admin.ToString()));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -54,11 +70,10 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseCors(MyAllowSpecificOrigins);
-
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

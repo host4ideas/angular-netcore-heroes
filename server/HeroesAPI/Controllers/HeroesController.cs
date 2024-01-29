@@ -1,7 +1,9 @@
 ﻿using HeroesAPI.Helpers;
 using HeroesAPI.Models;
+using HeroesAPI.Models.Forms;
 using HeroesAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using MyApi.Filters;
 
 namespace HeroesAPI.Controllers
 {
@@ -9,13 +11,6 @@ namespace HeroesAPI.Controllers
     [ApiController]
     public class HeroesController(ServiceCosmosDb serviceCosmosDb, HelperDocumentId helperDocumentId) : ControllerBase
     {
-        //[HttpPost("[action]")]
-        //public async Task<ActionResult> CreateDatabase()
-        //{
-        //    await serviceCosmosDb.CreateDatabaseAsync();
-        //    return NoContent();
-        //}
-
         [HttpGet]
         public async Task<ActionResult<List<Hero>>> GetAllHeroes()
         {
@@ -34,13 +29,20 @@ namespace HeroesAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> CreateHero(NewHeroForm hero)
+        public async Task<ActionResult> CreateHero([FromBody] NewHeroForm hero)
         {
+            Power? heroPower = await serviceCosmosDb.FindPowerAsync(hero.PowerId);
+
+            if (heroPower == null)
+            {
+                return NotFound("Power not found.");
+            }
+
             Hero newHero = new()
             {
                 Id = helperDocumentId.GetNewId(),
                 Name = hero.Name,
-                Power = hero.Power,
+                Power = heroPower,
                 AlterEgo = hero.AlterEgo,
             };
             await serviceCosmosDb.InsertHeroAsync(newHero);
@@ -48,7 +50,7 @@ namespace HeroesAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<Hero?>> UpdateHero(Hero hero)
+        public async Task<ActionResult<Hero?>> UpdateHero([FromBody] Hero hero)
         {
             Hero? updatedHero = await serviceCosmosDb.UpdateHeroAsync(hero);
             return Ok(updatedHero);
